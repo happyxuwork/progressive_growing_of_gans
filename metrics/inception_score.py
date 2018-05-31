@@ -48,13 +48,13 @@ def get_inception_score(images, splits=10):
   for img in images:
     img = img.astype(np.float32)
     inps.append(np.expand_dims(img, 0))
-  bs = 100
+  bs = 1
   with tf.Session() as sess:
     preds = []
     n_batches = int(math.ceil(float(len(inps)) / float(bs)))
     for i in range(n_batches):
-        #sys.stdout.write(".") # EDIT: commented out
-        #sys.stdout.flush()
+        sys.stdout.write(".") # EDIT: commented out
+        sys.stdout.flush()
         inp = inps[(i * bs):min((i + 1) * bs, len(inps))]
         inp = np.concatenate(inp, 0)
         pred = sess.run(softmax, {'ExpandDims:0': inp})
@@ -109,7 +109,7 @@ def _init_inception():
             except ValueError:
                 o._shape_val = tf.TensorShape(new_shape) # EDIT: added for compatibility with tensorflow 1.6.0
     w = sess.graph.get_operation_by_name("softmax/logits/MatMul").inputs[1]
-    logits = tf.matmul(tf.squeeze(pool3), w)
+    logits = tf.matmul(tf.squeeze(pool3,[1,2]), w)
     softmax = tf.nn.softmax(logits)
 
 #if softmax is None: # EDIT: commented out

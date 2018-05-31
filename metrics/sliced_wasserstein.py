@@ -113,6 +113,9 @@ class API:
     def get_metric_formatting(self):
         return ['%-13.4f'] * len(self.get_metric_names())
 
+    def say(self):
+        print('xuqiang')
+
     def begin(self, mode):
         assert mode in ['warmup', 'reals', 'fakes']
         self.descriptors = [[] for res in self.resolutions]
