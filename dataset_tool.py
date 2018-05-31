@@ -26,7 +26,8 @@ def error(msg):
     exit(1)
 
 #----------------------------------------------------------------------------
-
+#if the tfrecord_dir is not exit then make it
+#print the process of processing wiht interval progress_interval=10 defaule
 class TFRecordExporter:
     def __init__(self, tfrecord_dir, expected_images, print_progress=True, progress_interval=10):
         self.tfrecord_dir       = tfrecord_dir
@@ -53,12 +54,13 @@ class TFRecordExporter:
         if self.print_progress:
             print('%-40s\r' % '', end='', flush=True)
             print('Added %d images.' % self.cur_images)
-
+    #shuffled the array by np.randim.RandomStahe().shffle(array)
     def choose_shuffled_order(self): # Note: Images and labels must be added in shuffled order.
         order = np.arange(self.expected_images)
         np.random.RandomState(123).shuffle(order)
         return order
 
+    #do one this operator -----2018--5--7
     def add_image(self, img):
         if self.print_progress and self.cur_images % self.progress_interval == 0:
             print('%d / %d\r' % (self.cur_images, self.expected_images), end='', flush=True)
@@ -69,6 +71,10 @@ class TFRecordExporter:
             assert self.shape[1] == self.shape[2]
             assert self.shape[1] == 2**self.resolution_log2
             tfr_opt = tf.python_io.TFRecordOptions(tf.python_io.TFRecordCompressionType.NONE)
+            # here mainly create self.resolution_log2 numbers .tfrecorders,each .tfrecorders save differ
+            # size image the number in .tfrecofers means the 2**number size images to save in the .tfrecorders
+            # so why do this
+            # for the structure is a dynamic struct from the low resolution to high resolution so have diff resolution of images is needed
             for lod in range(self.resolution_log2 - 1):
                 tfr_file = self.tfr_prefix + '-r%02d.tfrecords' % (self.resolution_log2 - lod)
                 self.tfr_writers.append(tf.python_io.TFRecordWriter(tfr_file, tfr_opt))
@@ -76,6 +82,12 @@ class TFRecordExporter:
         for lod, tfr_writer in enumerate(self.tfr_writers):
             if lod:
                 img = img.astype(np.float32)
+                # dowmscale the image by 1/2 but how do it ?????????????
+                # now i know it ===[0::2]represent that form zero to the end and interrapte is 2
+                # img1 = img[:, 0::2, 0::2]
+                # img2 = img[:, 0::2, 1::2]
+                # img3 = img[:, 1::2, 0::2]
+                # img4 = img[:, 1::2, 1::2]
                 img = (img[:, 0::2, 0::2] + img[:, 0::2, 1::2] + img[:, 1::2, 0::2] + img[:, 1::2, 1::2]) * 0.25
             quant = np.rint(img).clip(0, 255).astype(np.uint8)
             ex = tf.train.Example(features=tf.train.Features(feature={
@@ -324,6 +336,7 @@ def create_mnistrgb(tfrecord_dir, mnist_dir, num_images=1000000, random_seed=123
 #----------------------------------------------------------------------------
 
 def create_cifar10(tfrecord_dir, cifar10_dir):
+    print(sys.argv)
     print('Loading CIFAR-10 from "%s"' % cifar10_dir)
     import pickle
     images = []
@@ -341,6 +354,7 @@ def create_cifar10(tfrecord_dir, cifar10_dir):
     assert np.min(labels) == 0 and np.max(labels) == 9
     onehot = np.zeros((labels.size, np.max(labels) + 1), dtype=np.float32)
     onehot[np.arange(labels.size), labels] = 1.0
+    print('tfrecord_dir path  "%s"' % tfrecord_dir)
 
     with TFRecordExporter(tfrecord_dir, images.shape[0]) as tfr:
         order = tfr.choose_shuffled_order()
@@ -363,6 +377,7 @@ def create_cifar100(tfrecord_dir, cifar100_dir):
     assert np.min(labels) == 0 and np.max(labels) == 99
     onehot = np.zeros((labels.size, np.max(labels) + 1), dtype=np.float32)
     onehot[np.arange(labels.size), labels] = 1.0
+    print('tfrecord_dir path  "%s"' % tfrecord_dir)
 
     with TFRecordExporter(tfrecord_dir, images.shape[0]) as tfr:
         order = tfr.choose_shuffled_order()
@@ -639,6 +654,7 @@ def create_from_hdf5(tfrecord_dir, hdf5_filename, shuffle):
 #----------------------------------------------------------------------------
 
 def execute_cmdline(argv):
+    print(sys.argv)
     prog = argv[0]
     parser = argparse.ArgumentParser(
         prog        = prog,
@@ -735,6 +751,10 @@ def execute_cmdline(argv):
 #----------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    execute_cmdline(sys.argv)
+    # execute_cmdline(sys.argv)
+    # execute_cmdline(['E:\\programdate\\python-all-in-for-happyxuwork\\progressive_growing_of_gans\\dataset_tool.py', 'create_cifar10', './datasets/cifar10', 'F:\\研究生\\图像数据\\数据\\其它\\CIFAR10\\'])
+    execute_cmdline(['E:\\programdate\\python-all-in-for-happyxuwork\\progressive_growing_of_gans\\dataset_tool.py', 'create_from_images', './datasets/dls', 'F:/X---Y/extendY-3-3/'])
+    # print(sys.argv)
+    # execute_cmdline(['create_cifar10','datasets/cifar10','F:\研究生\图像数据\数据\其它\CIFAR10'])
 
 #----------------------------------------------------------------------------

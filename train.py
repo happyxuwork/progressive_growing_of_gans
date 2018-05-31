@@ -282,6 +282,10 @@ if __name__ == "__main__":
     os.environ.update(config.env)
     tfutil.init_tf(config.tf_config)
     print('Running %s()...' % config.train['func'])
+    #**config.train is a dict struct
+    #train['func'] = 'train.train_progressive_gan'
+    #train['mirror_augment'] = True
+    #train['total_king'] = 12000
     tfutil.call_func_by_name(**config.train)
     print('Exiting...')
 

@@ -136,7 +136,11 @@ def generate_training_video(run_id, duration_sec=20.0, time_warp=1.5, mp4=None, 
 #----------------------------------------------------------------------------
 # Evaluate one or more metrics for a previous training run.
 # To run, uncomment one of the appropriate lines in config.py and launch train.py.
-
+# run_id = 23
+# log = metirc-swd-16k.txt
+# metrics=['swd']
+# num_images = 16384
+# real_passes=2
 def evaluate_metrics(run_id, log, metrics, num_images, real_passes, minibatch_size=None):
     metric_class_names = {
         'swd':      'metrics.sliced_wasserstein.API',
